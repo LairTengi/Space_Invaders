@@ -122,10 +122,10 @@ class SpaceInvaders:
     def _check_bullet_invaders_collision(self):
         # Удаление снаряда и пришельца (коллизия между элементами)
         # Тут можно третьим аргументом передать False, чтобы снаряд не убивался об первого пришельца
-        # collisions = pygame.sprite.groupcollide(self.bullets, self.invaders, True, True)
+        collisions = pygame.sprite.groupcollide(self.bullets, self.invaders, True, True)
 
         # Тестовый залп
-        collisions = pygame.sprite.groupcollide(self.bullets, self.invaders, False, True)
+        # collisions = pygame.sprite.groupcollide(self.bullets, self.invaders, False, True)
         if collisions:
             self.stats.score += self.settings.invader_point
             self.score_table.prep_score()

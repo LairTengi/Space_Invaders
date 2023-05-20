@@ -13,8 +13,8 @@ class Settings:
         self.score = 0
         self.invader_point = 50  # Стоимость пришельца
 
-        # self.bullet_width = 3
-        self.bullet_width = 640
+        self.bullet_width = 3
+        # self.bullet_width = 640
         self.bullet_height = 15
         self.bullet_color = (255, 0, 0)
 
