@@ -13,6 +13,7 @@ class ScoreTable():
         self.prep_score()
         self.prep_life()
         self.prep_level()
+        self.prep_high_score()
 
     def prep_score(self):
         score_str = str(self.stats.score)
@@ -38,9 +39,25 @@ class ScoreTable():
         self.level_rect.right = self.screen_rect.right - 600
         self.level_rect.top = 10
 
+    def prep_high_score(self):
+        high_score = self.stats.high_score  # Не округляем
+        high_score_str = "{:,}".format(high_score)
+        self.high_score_image = self.font.render(high_score_str, True,
+                                                 self.text_color, self.settings.bg_color)
+        # Выравнивание по центру
+        self.high_score_rect = self.high_score_image.get_rect()
+        self.high_score_rect.centerx = self.screen_rect.centerx
+        self.high_score_rect.top = self.score_rect.top
+
     def show_score(self):
         self.screen.blit(self.score_image, self.score_rect)
         self.screen.blit(self.level_image, self.level_rect)
+        self.screen.blit(self.high_score_image, self.high_score_rect)
 
     def show_life(self):
         self.screen.blit(self.life_image, self.life_rect)
+
+    def check_new_record(self):
+        if self.stats.score > self.stats.high_score:
+            self.stats.high_score = self.stats.score
+            self.prep_high_score()

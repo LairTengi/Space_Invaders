@@ -32,6 +32,7 @@ class SpaceInvaders:
         self.stats = GameStats(self)
         self.score_table = ScoreTable(self)
 
+        # Кнопка Play
         self.play_button = Button(self, "Play")
 
     def run_game(self):
@@ -129,6 +130,7 @@ class SpaceInvaders:
         if collisions:
             self.stats.score += self.settings.invader_point
             self.score_table.prep_score()
+            self.score_table.check_new_record()
 
         # Обновление флота при уничтожении всех пришельцев
         if not self.invaders:
