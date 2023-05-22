@@ -213,6 +213,8 @@ class SpaceInvaders:
             self._fire_bullet()
         elif event.key == pygame.K_b:  # Кнопка b для бомбы
             self._fire_bomb()
+        elif event.key == pygame.K_p:
+            self._prepare_game()
 
     def _check_keyup_events(self, event):
         if event.key == pygame.K_RIGHT:
@@ -223,6 +225,10 @@ class SpaceInvaders:
     def _check_play_button(self, mouse_pos):
         button_clicked = self.play_button.rect.collidepoint(mouse_pos)
         if button_clicked and not self.stats.game_active:
+            self._prepare_game()
+
+    def _prepare_game(self):
+        if not self.stats.game_active:
             self.settings.initialize_dynamic_settings()  # Сброс игровых настроек
             self.stats.reset_stats()  # Сброс игровой статистики
             self.stats.game_active = True
@@ -249,9 +255,12 @@ class SpaceInvaders:
             file.write(serialized_data)
 
     def load_stats(self):
-        with open('data.pickle', 'rb') as file:
-            loaded_data = pickle.load(file)
-        self.stats.high_score = int(loaded_data)
+        try:
+            with open('data.pickle', 'rb') as file:
+                loaded_data = pickle.load(file)
+            self.stats.high_score = int(loaded_data)
+        except:
+            pass
 
 
 if __name__ == "__main__":
