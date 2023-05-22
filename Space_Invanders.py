@@ -1,3 +1,4 @@
+import pickle
 import sys
 import time
 
@@ -38,9 +39,9 @@ class SpaceInvaders:
         self.play_button = Button(self, "Play")
 
     def run_game(self):
+        self.load_stats()  # Загрузка сериализованных объектов
         while True:
             self._check_events()
-
             if self.stats.game_active:
                 self.ship.update()
                 self._update_bullets()
@@ -126,14 +127,14 @@ class SpaceInvaders:
         new_bomb = Bomb(self)
         self.bomb.add(new_bomb)
 
-    def _update_bullets(self):              # Удаление вышедших за границы экрана пуль
+    def _update_bullets(self):  # Удаление вышедших за границы экрана пуль
         self.bullets.update()
         for bullet in self.bullets.copy():
             if bullet.rect.bottom <= 0:
                 self.bullets.remove(bullet)
         self._check_bullet_invaders_collision()
 
-    def _update_bomb(self):                 # Удаление бомб за границами экрана
+    def _update_bomb(self):  # Удаление бомб за границами экрана
         self.bomb.update()
         for bomb in self.bomb.copy():
             if bomb.rect.bottom <= 0:
@@ -207,10 +208,10 @@ class SpaceInvaders:
         elif event.key == pygame.K_LEFT:
             self.ship.moving_left = True
         elif event.key == pygame.K_ESCAPE:
-            sys.exit()
+            self.graceful_shutdown()
         elif event.key == pygame.K_SPACE:
             self._fire_bullet()
-        elif event.key == pygame.K_b:       # Кнопка b для бомбы
+        elif event.key == pygame.K_b:  # Кнопка b для бомбы
             self._fire_bomb()
 
     def _check_keyup_events(self, event):
@@ -230,11 +231,27 @@ class SpaceInvaders:
             self.score_table.prep_level()
             self.score_table.prep_life()
             self.score_table.prep_bombs()
+            self.score_table.prep_high_score()
 
             self.invaders.empty()
             self.bullets.empty()
             self._create_armada()
             self.ship.center_ship()
+
+    # Красивый выход
+    def graceful_shutdown(self):
+        self.save_stats()
+        sys.exit(0)
+
+    def save_stats(self):
+        serialized_data = pickle.dumps(self.stats.high_score)
+        with open('data.pickle', 'wb') as file:
+            file.write(serialized_data)
+
+    def load_stats(self):
+        with open('data.pickle', 'rb') as file:
+            loaded_data = pickle.load(file)
+        self.stats.high_score = int(loaded_data)
 
 
 if __name__ == "__main__":
