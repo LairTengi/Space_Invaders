@@ -14,6 +14,7 @@ class ScoreTable():
         self.prep_life()
         self.prep_level()
         self.prep_high_score()
+        self.prep_bombs()
 
     def prep_score(self):
         score_str = str(self.stats.score)
@@ -28,7 +29,7 @@ class ScoreTable():
         self.life_image = self.font.render(life_str, True,
                                            self.text_color, self.settings.bg_color)
         self.life_rect = self.life_image.get_rect()
-        self.life_rect.right = self.screen_rect.right - 500
+        self.life_rect.right = self.screen_rect.right - 550
         self.life_rect.top = 10
 
     def prep_level(self):
@@ -49,11 +50,19 @@ class ScoreTable():
         self.high_score_rect.centerx = self.screen_rect.centerx
         self.high_score_rect.top = self.score_rect.top
 
+    def prep_bombs(self):
+        bombs = str(self.stats.bombs_left)
+        self.bombs_image = self.font.render(bombs, True,
+                                            self.text_color, self.settings.bg_color)
+        self.bombs_rect = self.bombs_image.get_rect()
+        self.bombs_rect.right = self.screen_rect.right - 500
+        self.bombs_rect.top = 10
+
     def show_score(self):
         self.screen.blit(self.score_image, self.score_rect)
         self.screen.blit(self.level_image, self.level_rect)
         self.screen.blit(self.high_score_image, self.high_score_rect)
-
+        self.screen.blit(self.bombs_image, self.bombs_rect)
     def show_life(self):
         self.screen.blit(self.life_image, self.life_rect)
 

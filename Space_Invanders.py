@@ -4,6 +4,7 @@ import time
 import pygame
 
 from Bullet import Bullet
+from Bomb import Bomb
 from Settings import Settings
 from Ship import Ship
 from Invader import Invader
@@ -26,6 +27,7 @@ class SpaceInvaders:
         # Группа для управления спрайтами
         self.bullets = pygame.sprite.Group()
         self.invaders = pygame.sprite.Group()
+        self.bomb = pygame.sprite.Group()
         self._create_armada()
 
         # Игровая статистика
@@ -43,6 +45,7 @@ class SpaceInvaders:
                 self.ship.update()
                 self._update_bullets()
                 self._update_invaders()
+                self._update_bomb()
 
             self._update_screen()
 
@@ -112,12 +115,29 @@ class SpaceInvaders:
         new_bullet = Bullet(self)
         self.bullets.add(new_bullet)
 
-    def _update_bullets(self):
-        # Удаление вышедших за границы экрана снарядов
+    def _fire_bomb(self):
+        # Проверка на 3 заряда
+        if self.stats.bombs_left > 0:
+            self.stats.bombs_left -= 1
+            self.score_table.prep_bombs()
+        elif self.stats.bombs_left == 0:
+            return
+
+        new_bomb = Bomb(self)
+        self.bomb.add(new_bomb)
+
+    def _update_bullets(self):              # Удаление вышедших за границы экрана пуль
         self.bullets.update()
         for bullet in self.bullets.copy():
             if bullet.rect.bottom <= 0:
                 self.bullets.remove(bullet)
+        self._check_bullet_invaders_collision()
+
+    def _update_bomb(self):                 # Удаление бомб за границами экрана
+        self.bomb.update()
+        for bomb in self.bomb.copy():
+            if bomb.rect.bottom <= 0:
+                self.bomb.remove(bomb)
         self._check_bullet_invaders_collision()
 
     def _check_bullet_invaders_collision(self):
@@ -125,9 +145,11 @@ class SpaceInvaders:
         # Тут можно третьим аргументом передать False, чтобы снаряд не убивался об первого пришельца
         collisions = pygame.sprite.groupcollide(self.bullets, self.invaders, True, True)
 
+        collisions_bomb = pygame.sprite.groupcollide(self.bomb, self.invaders, False, True)
+
         # Тестовый залп
         # collisions = pygame.sprite.groupcollide(self.bullets, self.invaders, False, True)
-        if collisions:
+        if collisions or collisions_bomb:
             self.stats.score += self.settings.invader_point
             self.score_table.prep_score()
             self.score_table.check_new_record()
@@ -153,12 +175,14 @@ class SpaceInvaders:
         self.ship.blitMe()
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
+        for bomb in self.bomb.sprites():
+            bomb.draw_bomb()
         self.invaders.draw(self.screen)
 
         if not self.stats.game_active:
             self.play_button.draw_button()
 
-        # Отображение различных статистик на экране
+        # Отображение статистик на экране
         self.score_table.show_life()
         self.score_table.show_score()
         pygame.display.flip()
@@ -186,6 +210,8 @@ class SpaceInvaders:
             sys.exit()
         elif event.key == pygame.K_SPACE:
             self._fire_bullet()
+        elif event.key == pygame.K_b:       # Кнопка b для бомбы
+            self._fire_bomb()
 
     def _check_keyup_events(self, event):
         if event.key == pygame.K_RIGHT:
@@ -203,6 +229,7 @@ class SpaceInvaders:
             self.score_table.prep_score()
             self.score_table.prep_level()
             self.score_table.prep_life()
+            self.score_table.prep_bombs()
 
             self.invaders.empty()
             self.bullets.empty()
