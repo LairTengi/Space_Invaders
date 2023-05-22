@@ -8,5 +8,6 @@ class GameStats():
     def reset_stats(self):
         # Отдельная инициализация статистики, которая изменяется в ходе игры
         self.ships_left = self.settings.ship_limit
+        self.bombs_left = self.settings.bomb_limit
         self.score = self.settings.score  # Очки
         self.level = 1  # Уровень игры
