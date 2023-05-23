@@ -63,6 +63,7 @@ class ScoreTable():
         self.screen.blit(self.level_image, self.level_rect)
         self.screen.blit(self.high_score_image, self.high_score_rect)
         self.screen.blit(self.bombs_image, self.bombs_rect)
+
     def show_life(self):
         self.screen.blit(self.life_image, self.life_rect)
 

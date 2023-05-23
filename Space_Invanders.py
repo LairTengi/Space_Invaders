@@ -1,3 +1,4 @@
+import pickle
 import sys
 import time
 
@@ -37,10 +38,12 @@ class SpaceInvaders:
         # Кнопка Play
         self.play_button = Button(self, "Play")
 
+        self.FIRST_GAME = True
+
     def run_game(self):
+        self.load_stats()  # Загрузка сериализованных объектов
         while True:
             self._check_events()
-
             if self.stats.game_active:
                 self.ship.update()
                 self._update_bullets()
@@ -126,14 +129,14 @@ class SpaceInvaders:
         new_bomb = Bomb(self)
         self.bomb.add(new_bomb)
 
-    def _update_bullets(self):              # Удаление вышедших за границы экрана пуль
+    def _update_bullets(self):  # Удаление вышедших за границы экрана пуль
         self.bullets.update()
         for bullet in self.bullets.copy():
             if bullet.rect.bottom <= 0:
                 self.bullets.remove(bullet)
         self._check_bullet_invaders_collision()
 
-    def _update_bomb(self):                 # Удаление бомб за границами экрана
+    def _update_bomb(self):  # Удаление бомб за границами экрана
         self.bomb.update()
         for bomb in self.bomb.copy():
             if bomb.rect.bottom <= 0:
@@ -207,11 +210,19 @@ class SpaceInvaders:
         elif event.key == pygame.K_LEFT:
             self.ship.moving_left = True
         elif event.key == pygame.K_ESCAPE:
-            sys.exit()
+            self.graceful_shutdown()
         elif event.key == pygame.K_SPACE:
             self._fire_bullet()
-        elif event.key == pygame.K_b:       # Кнопка b для бомбы
+        elif event.key == pygame.K_b:  # Кнопка b для бомбы
             self._fire_bomb()
+        elif event.key == pygame.K_p and not self.stats.game_active:
+            if self.FIRST_GAME:
+                self._prepare_game()
+                self.FIRST_GAME = False
+            else:
+                self.stats.game_active = True
+        elif event.key == pygame.K_p and self.stats.game_active:
+            self.stats.game_active = False
 
     def _check_keyup_events(self, event):
         if event.key == pygame.K_RIGHT:
@@ -222,6 +233,10 @@ class SpaceInvaders:
     def _check_play_button(self, mouse_pos):
         button_clicked = self.play_button.rect.collidepoint(mouse_pos)
         if button_clicked and not self.stats.game_active:
+            self._prepare_game()
+
+    def _prepare_game(self):
+        if not self.stats.game_active:
             self.settings.initialize_dynamic_settings()  # Сброс игровых настроек
             self.stats.reset_stats()  # Сброс игровой статистики
             self.stats.game_active = True
@@ -230,11 +245,30 @@ class SpaceInvaders:
             self.score_table.prep_level()
             self.score_table.prep_life()
             self.score_table.prep_bombs()
+            self.score_table.prep_high_score()
 
             self.invaders.empty()
             self.bullets.empty()
             self._create_armada()
             self.ship.center_ship()
+
+    # Красивый выход
+    def graceful_shutdown(self):
+        self.save_stats()
+        sys.exit(0)
+
+    def save_stats(self):
+        serialized_data = pickle.dumps(self.stats.high_score)
+        with open('data.pickle', 'wb') as file:
+            file.write(serialized_data)
+
+    def load_stats(self):
+        try:
+            with open('data.pickle', 'rb') as file:
+                loaded_data = pickle.load(file)
+            self.stats.high_score = int(loaded_data)
+        except:
+            pass
 
 
 if __name__ == "__main__":
