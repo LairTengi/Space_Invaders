@@ -38,6 +38,8 @@ class SpaceInvaders:
         # Кнопка Play
         self.play_button = Button(self, "Play")
 
+        self.FIRST_GAME = True
+
     def run_game(self):
         self.load_stats()  # Загрузка сериализованных объектов
         while True:
@@ -213,8 +215,14 @@ class SpaceInvaders:
             self._fire_bullet()
         elif event.key == pygame.K_b:  # Кнопка b для бомбы
             self._fire_bomb()
-        elif event.key == pygame.K_p:
-            self._prepare_game()
+        elif event.key == pygame.K_p and not self.stats.game_active:
+            if self.FIRST_GAME:
+                self._prepare_game()
+                self.FIRST_GAME = False
+            else:
+                self.stats.game_active = True
+        elif event.key == pygame.K_p and self.stats.game_active:
+            self.stats.game_active = False
 
     def _check_keyup_events(self, event):
         if event.key == pygame.K_RIGHT:
