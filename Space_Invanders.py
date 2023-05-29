@@ -4,14 +4,14 @@ import time
 
 import pygame
 
-from Bullet import Bullet
-from Bomb import Bomb
+from Bullets.Bullet import Bullet
+from Bullets.Bomb import Bomb
 from Settings import Settings
 from Ship import Ship
 from Invader import Invader
-from GameStatistics import GameStats
-from ScoreTable import ScoreTable
-from Button import Button
+from Stats.GameStatistics import GameStats
+from Stats.ScoreTable import ScoreTable
+from Buttons.Button import Button
 
 
 class SpaceInvaders:
