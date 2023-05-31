@@ -11,3 +11,4 @@ class GameStats():
         self.bombs_left = self.settings.bomb_limit
         self.score = self.settings.score  # Очки
         self.level = 1  # Уровень игры
+        # self.temp_mystery_hit = self.settings.mystery_hits

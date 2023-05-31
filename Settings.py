@@ -12,6 +12,7 @@ class Settings:
 
         self.score = 0
         self.invader_point = 50  # Стоимость пришельца
+        # self.mystery_hits = 10
 
         # Параметры обычных пуль
         self.bullet_width = 3
