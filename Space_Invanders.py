@@ -25,6 +25,7 @@ class SpaceInvaders:
         self.background_image = pygame.image.load('images/background.jpg')
 
         self.ship = Ship(self)
+        self.mystery_ship = MysteryShip(self)
 
         # Группа для управления спрайтами
         self.bullets = pygame.sprite.Group()
@@ -32,7 +33,6 @@ class SpaceInvaders:
         self.bomb = pygame.sprite.Group()
 
         self._create_armada()
-        self._create_mystery_ship()
 
         # Игровая статистика
         self.stats = GameStats(self)
@@ -43,6 +43,8 @@ class SpaceInvaders:
 
         self.FIRST_GAME = True
         self.MYSTERY = False
+        # Три хита у mystery_ship
+        self.coll_mystery_ship = 3
 
     def run_game(self):
         self.load_stats()  # Загрузка сериализованных объектов
@@ -105,6 +107,7 @@ class SpaceInvaders:
         self.settings.armada_direction *= -1
 
     # Определение поведения мистического корабля
+
     def _create_mystery_ship(self):
         self.mystery_ship = MysteryShip(self)
 
@@ -112,13 +115,17 @@ class SpaceInvaders:
         self._checks_mystery_ship_edges()
         self.mystery_ship.update()
 
-        # Если пришелец добрался до корабля - гг умер
-        # if pygame.sprite.spritecollide(self.ship, self.mystery_ship, True):
-        #     self._ship_hit()
-        # Если пришелец добрался до низа - гг умер
-        # self._check_mystery_bottom_collision()
-
-    #     TODO: Если корабль добирается до низа, то гг умирает
+        # Если мистический корабль добрался до корабля - гг умер
+        if self.mystery_ship.rect.colliderect(self.ship.rect):
+            self.MYSTERY = False
+            self.mystery_ship.kill()
+            self.stats.level += 1
+            self.score_table.prep_level()
+            self.mystery_ship.rect.x = 15
+            self.mystery_ship.rect.y = 30
+            self._ship_hit()
+        # Если мистический корабль добрался до низа - гг умер
+        self._check_mystery_ship_bottom_collision()
 
     def _checks_mystery_ship_edges(self):
         if self.mystery_ship.check_edges():
@@ -149,7 +156,6 @@ class SpaceInvaders:
             self.stats.game_active = False
 
     # Определение поведения пуль
-
     def _fire_bullet(self):
         new_bullet = Bullet(self)
         self.bullets.add(new_bullet)
@@ -185,16 +191,23 @@ class SpaceInvaders:
     def _check_mystery_ship_bullets_collision(self):
         collisions_m_ship = pygame.sprite.spritecollideany(self.mystery_ship, self.bullets)
         if collisions_m_ship:
-            self.mystery_ship.kill()
-            self.stats.bombs_left += self.settings.bomb_limit
-            self.score_table.prep_bombs()
+            if self.coll_mystery_ship > 0:
+                self.coll_mystery_ship -= 1
+                collisions_m_ship.kill()
+            else:
+                self.mystery_ship.kill()
+                self.stats.bombs_left += self.settings.bomb_limit
+                self.score_table.prep_bombs()
 
-            self.bullets.empty()
-            self._create_armada()
-            self.settings.increase_speed()  # Увеличение настроек игры
+                self.bullets.empty()
+                self._create_armada()
+                self.settings.increase_speed()  # Увеличение настроек игры
 
-            self.stats.level += 1
-            self.score_table.prep_level()
+                self.stats.level += 1
+                self.score_table.prep_level()
+                self.mystery_ship.rect.x = 15
+                self.mystery_ship.rect.y = 30
+                self.coll_mystery_ship = 3
 
     def _check_bullet_invaders_collision(self):
         # Удаление снаряда и пришельца (коллизия между элементами)
@@ -225,13 +238,6 @@ class SpaceInvaders:
                 self._ship_hit()
                 break
 
-    def _check_mystery_bottom_collision(self):
-        screen_rect = self.screen.get_rect()
-        for invader in self.invaders.sprites():
-            if invader.rect.bottom >= screen_rect.bottom:
-                self._ship_hit()
-                break
-
     def _update_screen(self):
         self.screen.blit(self.background_image, (0, 0))
         self.ship.blitMe()
@@ -239,17 +245,12 @@ class SpaceInvaders:
             bullet.draw_bullet()
         for bomb in self.bomb.sprites():
             bomb.draw_bomb()
-        # Если уровень кратен пяти, то вместо флота появляется один пришелец
-        # В ином случае отрисовывается обычная армада
-        if self.stats.level % 5 == 0:  # Тут может быть ошибка
+        if self.stats.level % 5 == 0:
             self.MYSTERY = True
             self.mystery_ship.draw(self.screen)
         else:
             self.MYSTERY = False
             self.invaders.draw(self.screen)
-        # self.invaders.draw(self.screen)
-        # Проблема в том, что отрисовка происходит, но по сути как будто бы это не до конца правильно.
-        # Нужно закинуть это в чатГПТ
 
         if not self.stats.game_active:
             self.play_button.draw_button()
